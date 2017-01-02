@@ -1,0 +1,10 @@
+name: camel_yaml
+version: 0.1.0
+
+authors:
+  - mosop
+
+
+crystal: 0.20.1
+
+license: MIT
