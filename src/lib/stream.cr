@@ -34,9 +34,10 @@ module Yaml
       document.raw
     end
 
-    def pretty(indent : String? = nil)
+    def pretty(indent : String? = nil, line_break = false)
       String.build do |sb|
         pretty sb, indent
+        sb << "\n" if line_break
       end
     end
 
