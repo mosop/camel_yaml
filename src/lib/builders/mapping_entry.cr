@@ -15,6 +15,18 @@ module Yaml::Builders
       @mapping_entry.value
     end
 
+    def map
+      map = if v = @mapping_entry.value
+        if v = v.as?(Nodes::Mapping)
+          v
+        end
+      end
+      map ||= Nodes::Mapping.new(position).tap do |map|
+        self.value = map
+      end
+      yield Mapping.new(self, 1, map)
+    end
+
     def seq
       seq = if v = @mapping_entry.value
         if v = v.as?(Nodes::Sequence)
@@ -22,9 +34,19 @@ module Yaml::Builders
         end
       end
       seq ||= Nodes::Sequence.new(position).tap do |seq|
-        @mapping_entry.value = seq
+        self.value = seq
       end
       yield Sequence.new(self, 1, seq)
+    end
+
+    def value=(s : String?)
+      @mapping_entry.change
+      @mapping_entry.value = Nodes::Scalar.new_string_scalar(s, position)
+    end
+
+    def value=(v : Nodes::Mapping | Nodes::Sequence)
+      @mapping_entry.change
+      @mapping_entry.value = v
     end
 
     def value=(s : String?)

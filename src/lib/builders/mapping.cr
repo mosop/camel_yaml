@@ -19,6 +19,10 @@ module Yaml::Builders
       MappingEntry.new(self, index, @mapping.accessible_entry?(index) || @mapping.fallback_entry(index))
     end
 
+    def []=(index : String, value : String?)
+      @mapping[index] = value
+    end
+
     def comment=(s : String)
       assign_leading_comment_to s, @mapping
     end

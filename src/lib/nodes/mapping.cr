@@ -98,6 +98,10 @@ module Yaml::Nodes
       Builders::Mapping.new(parent, index, self)
     end
 
+    def build
+      yield Builders::Mapping.new(nil, nil, self)
+    end
+
     def raw
       ({} of String => Raw).tap do |h|
         entries.each do |kv|
