@@ -109,7 +109,7 @@ module Yaml
     end
 
     def new_accessor
-      Accessor.new(self, 0, scoped_value(0))
+      Accessor.initialize(Accessor.new, self, 0, scoped_value(0))
     end
 
     def collect_string_index_paths

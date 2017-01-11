@@ -37,23 +37,49 @@ module Yaml
       end
     end
 
-    getter layer : Layer
-    getter document_index : Int32
+    getter! layer : Layer?
+    getter! document_index : Int32?
     getter! previous_accessor : Accessor?
     getter? index : Index?
     @target : Target?
 
-    def initialize(@layer : Layer, @document_index : Int32, @target)
+    def self.initialize(new_instance : Accessor, layer : Layer, document_index : Int32, target : Target?)
+      new_instance._layer(layer)._document_index(document_index)._target(target)
     end
 
-    def initialize(previous_accessor : Accessor, @index : Index, @target)
-      @previous_accessor = previous_accessor
-      @layer = previous_accessor.layer
-      @document_index = previous_accessor.document_index
+    def self.initialize(new_instance : Accessor, previous_accessor : Accessor, index : Index, target : Target?)
+      new_instance._previous_accessor(previous_accessor)._index(index)._target(target)
+    end
+
+    def _layer(v : Layer)
+      @layer = v
+      self
+    end
+
+    def _document_index(v : Int32)
+      @document_index = v
+      self
+    end
+
+    def _previous_accessor(v : Accessor)
+      @previous_accessor = v
+      @layer = v.layer
+      @document_index = v.document_index
+      self
+    end
+
+    def _index(v : Index)
+      @index = v
+      self
+    end
+
+    def _target(v : Target?)
+      @target = v
+      self
     end
 
     def document
-      @layer.stream.documents[@document_index]
+      layer.stream.documents[document_index]
     end
 
     @indexes : Array(Index)?
@@ -105,7 +131,7 @@ module Yaml
     end
 
     def [](index : Index)
-      Accessor.new(self, index, next_target?(index))
+      Accessor.initialize(Accessor.new, self, index, next_target?(index))
     end
 
     def [](accessor : Accessor)
@@ -275,16 +301,16 @@ module Yaml
     end
 
     def next_layer?
-      if di = @layer.next_document_index?(@document_index)
-        Accessor.new(@layer, di, @layer.scoped_value(di))
-      elsif l = @layer.next_layer?
-        Accessor.new(l, 0, l.scoped_value(0))
+      if di = layer.next_document_index?(document_index)
+        Accessor.initialize(Accessor.new, layer, di, layer.scoped_value(di))
+      elsif l = layer.next_layer?
+        Accessor.initialize(Accessor.new, l, 0, l.scoped_value(0))
       end
     end
 
     @all_indexes : Array(Index)?
     def all_indexes
-      @all_indexes ||= @layer.scope + indexes
+      @all_indexes ||= layer.scope + indexes
     end
 
     def collect_string_index_paths
@@ -292,7 +318,7 @@ module Yaml
     end
 
     def save
-      @layer.save
+      layer.save
     end
 
     def inspect(io : IO)

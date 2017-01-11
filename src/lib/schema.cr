@@ -6,51 +6,51 @@ module Yaml
 
       macro register_schema
         class ::Yaml::Stream
-          def [](schema : ::{{@type}}.class)
-            new_layer[schema]
+          def [](schema : ::{{@type}}.class, *args)
+            new_layer[schema, *args]
           end
         end
 
         class ::Yaml::Layer
-          def [](schema : ::{{@type}}.class)
-            ::{{@type}}::Accessor.new(self, 0, scoped_value(0))
+          def [](schema : ::{{@type}}.class, *args)
+            ::Yaml::Accessor.initialize(::{{@type}}::Accessor.new(*args), self, 0, scoped_value(0))
           end
         end
 
         class ::Yaml::Accessor
-          def [](schema : ::{{@type}}.class)
+          def [](schema : ::{{@type}}.class, *args)
             if prev = @previous_accessor
-              ::{{@type}}::Accessor.new(prev, @index.not_nil!, @target)
+              ::Yaml::Accessor.initialize(::{{@type}}::Accessor.new(*args), prev, @index.not_nil!, @target)
             else
-              ::{{@type}}::Accessor.new(@layer, @document_index, @layer.scoped_value(@document_index))
+              ::Yaml::Accessor.initialize(::{{@type}}::Accessor.new(*args), layer, document_index, layer.scoped_value(document_index))
             end
           end
         end
       end
 
-      macro map(t)
+      macro map(t, *args)
         class Accessor
           def [](index : ::Yaml::Index)
-            \{{t}}::Accessor.new(self, index, next_target?(index))
+            ::Yaml::Accessor.initialize(\{{t}}::Accessor.new(\{{args.map{|i| i.id}.splat}}), self, index, next_target?(index))
           end
         end
       end
 
-      macro seq(t)
+      macro seq(t, *args)
         class Accessor
           def [](index : ::Int32)
-            \{{t}}::Accessor.new(self, index, next_target?(index))
+            ::Yaml::Accessor.initialize(\{{t}}::Accessor.new(\{{args.map{|i| i.id}.splat}}), self, index, next_target?(index))
           end
         end
       end
 
-      macro key(key, t)
+      macro key(key, t, *args)
         \{%
           key = key.id
         \%}
         class Accessor
           def \{{key}}
-            \{{t}}::Accessor.new(self, \{{key.stringify}}, next_target?(\{{key.stringify}}))
+            ::Yaml::Accessor.initialize(\{{t}}::Accessor.new(\{{args.map{|i| i.id}.splat}}), self, \{{key.stringify}}, next_target?(\{{key.stringify}}))
           end
         end
       end
