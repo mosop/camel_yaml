@@ -1,6 +1,6 @@
 require "../spec_helper"
 
-module YamlInternalOrderingFeature
+module YamlInternalSpecPrettyEmpty
   it name do
     yaml = Yaml.parse(<<-EOS
     a: {}
