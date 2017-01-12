@@ -34,4 +34,16 @@ module Yaml
       yield Builders::Mapping.new(nil, nil, map)
     end
   end
+
+  def self.to_node(position, raw : RawHashArg)
+    Nodes::Mapping.new(position).merge! raw
+  end
+
+  def self.to_node(position, raw : RawArrayArg)
+    Nodes::Sequence.new(position).merge! raw
+  end
+
+  def self.to_node(position, raw : String?)
+    Nodes::Scalar.new_string_scalar(raw, position)
+  end
 end

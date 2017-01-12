@@ -50,6 +50,20 @@ module Yaml::Nodes
       entry
     end
 
+    def set_or_append(key : String, raw : RawArg)
+      set_or_append(key, Yaml.to_node(position, raw))
+    end
+
+    def set_or_append(key : String, value : Value)
+      if entry = string_key_entries[key]?
+        entry.value = value
+        entry.change
+        entry
+      else
+        append(Scalar.new_string_scalar(key, position), value)
+      end
+    end
+
     def change_entry
       @string_key_entries = nil
     end
@@ -145,6 +159,12 @@ module Yaml::Nodes
       h["<<"] = v.raw
     end
 
+    def merge!(raw : RawHashArg)
+      raw.each do |k, v|
+        self[k] = Yaml.to_node(position, v)
+      end
+    end
+
     def put_pretty(io : IO, indent : String, first_indent : String? = nil)
       if put_pretty_leading_comment?(io, indent, first_indent)
         put_pretty_entries io, indent, "\n#{indent}"
@@ -180,13 +200,20 @@ module Yaml::Nodes
       a
     end
 
-    def []=(key : String, value : String?)
-      if entry = string_key_entries[key]?
-        entry.value = Scalar.new_string_scalar(value, position)
-        entry.change
-      else
-        append Scalar.new_string_scalar(key, position), Scalar.new_string_scalar(value, position)
-      end
+    def []?(key : String)
+      string_key_entries[key]?
+    end
+
+    def []=(key : String, value : Value)
+      set_or_append(key, value)
+    end
+
+    def []=(key : String, raw : RawArg)
+      set_or_append(key, Yaml.to_node(position, raw))
+    end
+
+    def has_index?(index : String)
+      self[index]?
     end
   end
 end

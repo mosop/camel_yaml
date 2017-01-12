@@ -13,7 +13,7 @@ module Yaml
 
         class ::Yaml::Layer
           def [](schema : ::{{@type}}.class, *args)
-            ::Yaml::Accessor.initialize(::{{@type}}::Accessor.new(*args), self, 0, scoped_value(0))
+            scoped_accessor(0)[schema, *args]
           end
         end
 
@@ -22,7 +22,7 @@ module Yaml
             if prev = @previous_accessor
               ::Yaml::Accessor.initialize(::{{@type}}::Accessor.new(*args), prev, @index.not_nil!, @target)
             else
-              ::Yaml::Accessor.initialize(::{{@type}}::Accessor.new(*args), layer, document_index, layer.scoped_value(document_index))
+              layer.scoped_accessor(document_index, ::{{@type}}::Accessor.new(*args))
             end
           end
         end
@@ -30,7 +30,7 @@ module Yaml
 
       macro map(t, *args)
         class Accessor
-          def [](index : ::Yaml::Index)
+          def [](index : ::String)
             ::Yaml::Accessor.initialize(\{{t}}::Accessor.new(\{{args.map{|i| i.id}.splat}}), self, index, next_target?(index))
           end
         end

@@ -5,7 +5,7 @@ module Yaml
     @stream : Stream?
     @loader : Io::Loader?
     @saver : Io::Saver?
-    setter scope : Array(Index)?
+    getter scope = [] of Index
 
     def initialize(@stream : Stream)
     end
@@ -70,21 +70,26 @@ module Yaml
 
     def scoped(indexes : Array(Index))
       l = Layer.new(@stream, @loader, @saver, @previous_layer, @next_layer)
-      l.scope = indexes.dup
+      l.scope.concat indexes
       l
     end
 
-    def scoped_value(doc_index : Int32)
-      v = stream.documents[doc_index].value
-      scope.each do |i|
-        v = v.accessible_entry?(i)
-        return nil unless v
-      end
-      v
+    def initialize_accessor(doc_index : Int32, accessor)
+      Accessor.initialize(accessor, self, doc_index, stream.documents[doc_index].value)
     end
 
-    def scope
-      @scope || [] of Index
+    def scoped_accessor(doc_index : Int32)
+      initialize_accessor(doc_index, Accessor.new)[@scope]
+    end
+
+    def scoped_accessor(doc_index : Int32, accessor)
+      if @scope.empty?
+        initialize_accessor(doc_index, accessor)
+      else
+        prev = initialize_accessor(doc_index, Accessor.new)[@scope[0..-2]]
+        i = @scope.last
+        Accessor.initialize(accessor, prev, i, prev.next_target?(i))
+      end
     end
 
     def next_document_index?(current : Int32)
@@ -94,26 +99,20 @@ module Yaml
       end
     end
 
-    def [](index : Int32 | String)
-      new_accessor[index]
+    def [](index : Index)
+      scoped_accessor(0)[index]
     end
 
-    def [](indexes : Array(String))
-      new_accessor[indexes]
+    def [](indexes : Array(Index) | Array(String) | Array(Int32))
+      scoped_accessor(0)[indexes]
     end
 
-    def []=(index : Int32 | String, value : String)
-      new_accessor[index].build do |entry|
-        entry.value = value
-      end
-    end
-
-    def new_accessor
-      Accessor.initialize(Accessor.new, self, 0, scoped_value(0))
+    def []=(index : Index, value)
+      scoped_accessor(0)[index] = value
     end
 
     def collect_string_index_paths
-      new_accessor.collect_string_index_paths
+      scoped_accessor(0).collect_string_index_paths
     end
 
     def save

@@ -88,5 +88,24 @@ module Yaml::Nodes
     def self.undefined(location)
       Document.new(nil, Position.new(Source.new(location)))
     end
+
+    def undefined_value?
+      @value.as?(Undefined)
+    end
+
+    def nil_or_undefined_value?
+      @value.nil? || undefined_value?
+    end
+
+    def fallback_for(index : Index)
+      if nil_or_undefined_value?
+        case index
+        when String
+          append Mapping.new(position)
+        when Int32
+          append Sequence.new(position)
+        end
+      end
+    end
   end
 end

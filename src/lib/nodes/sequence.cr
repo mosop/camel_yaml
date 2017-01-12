@@ -11,6 +11,10 @@ module Yaml::Nodes
       entry
     end
 
+    def append(raw : RawArg?)
+      append(Yaml.to_node(position, raw))
+    end
+
     def change(entry : SequenceEntry)
     end
 
@@ -60,6 +64,17 @@ module Yaml::Nodes
 
     def raw_array?
       raw
+    end
+
+    def merge!(raw : RawArrayArg)
+      raw.each do |i|
+        self << Yaml.to_node(position, i)
+      end
+      self
+    end
+
+    def <<(value)
+      append value
     end
 
     def put_pretty(io : IO, indent : String, first_indent : String? = nil)

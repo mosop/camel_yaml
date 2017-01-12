@@ -1,3 +1,5 @@
+require "./nodes"
+
 module Yaml
   class Accessor
     alias Target = Nodes::Value | Nodes::MappingEntry | Nodes::SequenceEntry
@@ -9,7 +11,7 @@ module Yaml
 
       def initialize(@type, @layers)
         super(String.build do |sb|
-          sb << "No"
+          sb << "No YAML"
           if type
             sb << " "
             sb << type
@@ -18,7 +20,7 @@ module Yaml
           @layers.each do |i|
             sb << "\n " if @layers.size >= 2
             sb << " "
-            i.all_indexes.each do |j|
+            i.scope.each do |j|
               sb << "["
               sb << j.inspect
               sb << "]"
@@ -40,8 +42,8 @@ module Yaml
     getter! layer : Layer?
     getter! document_index : Int32?
     getter! previous_accessor : Accessor?
-    getter? index : Index?
-    @target : Target?
+    getter! index : Index?
+    getter? target : Target?
 
     def self.initialize(new_instance : Accessor, layer : Layer, document_index : Int32, target : Target?)
       new_instance._layer(layer)._document_index(document_index)._target(target)
@@ -82,18 +84,27 @@ module Yaml
       layer.stream.documents[document_index]
     end
 
-    @indexes : Array(Index)?
-    def indexes
-      @indexes ||= begin
-        a = if prev = @previous_accessor
-          prev.indexes.dup
+    @local_scope : Array(Index)?
+    def local_scope
+      @local_scope ||= begin
+        if scope.size > layer.scope.size
+          scope[layer.scope.size..-1]
         else
           [] of Index
         end
-        if i = @index
-          a << i
+      end
+    end
+
+    @scope : Array(Index)?
+    def scope
+      @scope ||= begin
+        if prev = @previous_accessor
+          a = prev.scope.dup
+          a << index
+          a
+        else
+          [] of Index
         end
-        a
       end
     end
 
@@ -130,12 +141,38 @@ module Yaml
       @first_accessor ||= @previous_accessor ? previous_accessor.first_accessor : self
     end
 
+    def fallback_for(index : Index)
+      if prev = @previous_accessor
+        prev.fallback_for self.index
+        @target = _fallback(self.index, index) unless @target
+      else
+        document.fallback_for index
+        @target = document.value
+      end
+    end
+
+    def _fallback(index : Int32, child_index : String)
+      raise "Not implemented."
+    end
+
+    def _fallback(index : Int32, child_index : Int32)
+      raise "Not implemented."
+    end
+
+    def _fallback(index : String, child_index : Int32)
+      raise "Not implemented."
+    end
+
+    def _fallback(index : String, child_index : String)
+      previous_accessor.map[index] = Nodes::Mapping.new(document.position)
+    end
+
     def [](index : Index)
       Accessor.initialize(Accessor.new, self, index, next_target?(index))
     end
 
     def [](accessor : Accessor)
-      self[accessor.indexes]
+      self[accessor.local_scope]
     end
 
     def [](indexes : Array(Index))
@@ -144,6 +181,11 @@ module Yaml
         current = current[index]
       end
       current
+    end
+
+    def []=(index : String, value)
+      fallback_for index
+      map[index] = value unless map.has_index?(index)
     end
 
     def next_target?(index : Index, layers : Array(Accessor)? = nil)
@@ -176,6 +218,25 @@ module Yaml
         map
       else
         raise NoEntry.new("mapping", layers)
+      end
+    end
+
+    def node?(layers : Array(Accessor)? = nil)
+      layers << self if layers
+      if target = @target
+        return target
+      end
+      if l = next_layer?
+        l[self].s?(layers)
+      end
+    end
+
+    def node(layers : Array(Accessor)? = nil)
+      layers = [] of Accessor
+      if node = node?(layers)
+        node
+      else
+        raise NoEntry.new(nil, layers)
       end
     end
 
@@ -302,15 +363,10 @@ module Yaml
 
     def next_layer?
       if di = layer.next_document_index?(document_index)
-        Accessor.initialize(Accessor.new, layer, di, layer.scoped_value(di))
+        layer.scoped_accessor(di)
       elsif l = layer.next_layer?
-        Accessor.initialize(Accessor.new, l, 0, l.scoped_value(0))
+        l.scoped_accessor(0)
       end
-    end
-
-    @all_indexes : Array(Index)?
-    def all_indexes
-      @all_indexes ||= layer.scope + indexes
     end
 
     def collect_string_index_paths
@@ -323,6 +379,15 @@ module Yaml
 
     def inspect(io : IO)
       to_s io
+    end
+
+    def accessor_count
+      n = 1
+      current = self
+      while current = current.previous_accessor?
+        n += 1
+      end
+      n
     end
   end
 end

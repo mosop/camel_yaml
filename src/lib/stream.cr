@@ -11,7 +11,7 @@ module Yaml
     end
 
     def new_accessor
-      Accessor.initialize(Accessor.new, new_layer, 0, @documents[0].value)
+      Layer.new(self).scoped_accessor(0)
     end
 
     def new_layer(*args)
