@@ -24,6 +24,10 @@ module Yaml::Nodes
       anchor_value.accessible_mapping?
     end
 
+    def accessible_sequence?
+      anchor_value.accessible_sequence?
+    end
+
     def accessible_key?
       anchor_value.accessible_key?
     end

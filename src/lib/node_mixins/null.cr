@@ -6,6 +6,9 @@ module Yaml::NodeMixins
     def accessible_mapping?
     end
 
+    def accessible_sequence?
+    end
+
     def accessible_key?
     end
 

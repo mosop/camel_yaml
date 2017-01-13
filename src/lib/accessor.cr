@@ -183,9 +183,14 @@ module Yaml
       current
     end
 
-    def []=(index : String, value)
+    def []=(index : Index, value)
       fallback_for index
-      map[index] = value unless map.has_index?(index)
+      case index
+      when String
+        map[index] = value unless map.has_index?(index)
+      when Int32
+        seq[index] = value unless seq.has_index?(index)
+      end
     end
 
     def next_target?(index : Index, layers : Array(Accessor)? = nil)
@@ -218,6 +223,27 @@ module Yaml
         map
       else
         raise NoEntry.new("mapping", layers)
+      end
+    end
+
+    def seq?(layers : Array(Accessor)? = nil)
+      layers << self if layers
+      if target = @target
+        if seq = target.accessible_sequence?
+          return seq
+        end
+      end
+      if l = next_layer?
+        l[self].seq?(layers)
+      end
+    end
+
+    def seq
+      layers = [] of Accessor
+      if seq = seq?(layers)
+        seq
+      else
+        raise NoEntry.new("sequence", layers)
       end
     end
 

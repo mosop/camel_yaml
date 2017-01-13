@@ -50,10 +50,6 @@ module Yaml::Nodes
       entry
     end
 
-    def set_or_append(key : String, raw : RawArg)
-      set_or_append(key, Yaml.to_node(position, raw))
-    end
-
     def set_or_append(key : String, value : Value)
       if entry = string_key_entries[key]?
         entry.value = value
@@ -81,6 +77,10 @@ module Yaml::Nodes
     end
 
     def accessible_mapping?
+      self
+    end
+
+    def accessible_sequence?
       self
     end
 
@@ -163,6 +163,7 @@ module Yaml::Nodes
       raw.each do |k, v|
         self[k] = Yaml.to_node(position, v)
       end
+      self
     end
 
     def put_pretty(io : IO, indent : String, first_indent : String? = nil)

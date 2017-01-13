@@ -11,10 +11,6 @@ module Yaml::Nodes
       entry
     end
 
-    def append(raw : RawArg?)
-      append(Yaml.to_node(position, raw))
-    end
-
     def change(entry : SequenceEntry)
     end
 
@@ -26,6 +22,10 @@ module Yaml::Nodes
     end
 
     def accessible_mapping?
+    end
+
+    def accessible_sequence?
+      self
     end
 
     def accessible_key?

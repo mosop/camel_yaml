@@ -40,6 +40,10 @@ module Yaml::Nodes
       @value.accessible_mapping?
     end
 
+    def accessible_sequence?
+      @value.accessible_sequence?
+    end
+
     def accessible_key?
       @key.to_string_mapping_key
     end

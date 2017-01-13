@@ -10,6 +10,10 @@ module Yaml
       new_accessor[index]
     end
 
+    def []=(index : Index, value)
+      new_accessor[index] = value
+    end
+
     def new_accessor
       Layer.new(self).scoped_accessor(0)
     end
