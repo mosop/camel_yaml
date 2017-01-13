@@ -30,7 +30,11 @@ module Yaml::Io
     end
 
     def to_layer
-      Layer.new(self, self)
+      if stream = @stream
+        Layer.new(StreamProvider.new(stream, self))
+      else
+        Layer.new(StreamProvider.new(self, self))
+      end
     end
   end
 end

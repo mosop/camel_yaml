@@ -2,32 +2,21 @@ module Yaml
   class Layer
     getter! previous_layer : Layer?
     getter! next_layer : Layer?
-    @stream : Stream?
-    @loader : Io::Loader?
-    @saver : Io::Saver?
+    @stream : StreamProvider
     getter scope = [] of Index
 
-    def initialize(@stream : Stream)
+    def initialize(stream : Stream)
+      @stream = StreamProvider.new(stream)
     end
 
-    def initialize(@stream : Stream, @saver : Io::Saver)
+    def initialize(@stream : StreamProvider)
     end
 
-    def initialize(@loader : Io::Loader)
-    end
-
-    def initialize(@loader : Io::Loader, @saver : Io::Saver)
-    end
-
-    def initialize(@stream, @loader, @saver, @previous_layer, @next_layer)
+    def initialize(@stream, @previous_layer, @next_layer)
     end
 
     def stream
-      @stream ||= if loader = @loader
-        loader.load
-      else
-        Yaml.parse("")
-      end
+      @stream.stream
     end
 
     def first_layer
@@ -69,7 +58,7 @@ module Yaml
     end
 
     def scoped(indexes : Array(Index))
-      l = Layer.new(@stream, @loader, @saver, @previous_layer, @next_layer)
+      l = Layer.new(@stream, @previous_layer, @next_layer)
       l.scope.concat indexes
       l
     end
@@ -116,9 +105,7 @@ module Yaml
     end
 
     def save
-      if saver = @saver
-        saver.save stream
-      end
+      @stream.save
     end
   end
 end
