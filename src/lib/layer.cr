@@ -104,6 +104,12 @@ module Yaml
       scoped_accessor(0).collect_string_index_paths
     end
 
+    def each
+      scoped_accessor(0).each do |i|
+        yield i
+      end
+    end
+
     def save
       @stream.save
     end

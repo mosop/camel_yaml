@@ -372,10 +372,21 @@ module Yaml
     end
 
     def each
-      if target = @target
-        target.each_accessible_key do |key|
-          yield self[key]
+      current = self
+      keys = Set(String).new
+      loop do
+        next_keys = Set(String).new
+        if target = current.target?
+          target.each_accessible_key do |key|
+            next if keys.includes?(key)
+            next_keys << key
+            yield current[key]
+          end
         end
+        l = current.next_layer?
+        return unless l
+        current = l[current]
+        keys.merge! next_keys
       end
     end
 
