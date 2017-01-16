@@ -31,7 +31,22 @@ module Yaml
       macro map(t, *args)
         class Accessor
           def [](index : ::String)
+            \{% if args.empty? %}
+              ::Yaml::Accessor.initialize(\{{t}}::Accessor.new, self, index, next_target?(index))
+            \{% else %}
             ::Yaml::Accessor.initialize(\{{t}}::Accessor.new(\{{args.map{|i| i.id}.splat}}), self, index, next_target?(index))
+            \{% end %}
+          end
+
+          def each
+            super do |i|
+              \{% if args.empty? %}
+                j = i[\{{t}}]
+              \{% else %}
+                j = i[\{{t}}, \{{args.map{|i| i.id}.splat}}]
+              \{% end %}
+              yield j
+            end
           end
         end
       end
@@ -39,7 +54,22 @@ module Yaml
       macro seq(t, *args)
         class Accessor
           def [](index : ::Int32)
+            \{% if args.empty? %}
+              ::Yaml::Accessor.initialize(\{{t}}::Accessor.new, self, index, next_target?(index))
+            \{% else %}
             ::Yaml::Accessor.initialize(\{{t}}::Accessor.new(\{{args.map{|i| i.id}.splat}}), self, index, next_target?(index))
+            \{% end %}
+          end
+
+          def each
+            super do |i|
+              \{% if args.empty? %}
+                j = i[\{{t}}]
+              \{% else %}
+                j = i[\{{t}}, \{{args.map{|i| i.id}.splat}}]
+              \{% end %}
+              yield j
+            end
           end
         end
       end
@@ -50,7 +80,11 @@ module Yaml
         \%}
         class Accessor
           def \{{key}}
-            ::Yaml::Accessor.initialize(\{{t}}::Accessor.new(\{{args.map{|i| i.id}.splat}}), self, \{{key.stringify}}, next_target?(\{{key.stringify}}))
+            \{% if args.empty? %}
+              ::Yaml::Accessor.initialize(\{{t}}::Accessor.new, self, \{{key.stringify}}, next_target?(\{{key.stringify}}))
+            \{% else %}
+              ::Yaml::Accessor.initialize(\{{t}}::Accessor.new(\{{args.map{|i| i.id}.splat}}), self, \{{key.stringify}}, next_target?(\{{key.stringify}}))
+            \{% end %}
           end
         end
       end
