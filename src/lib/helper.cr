@@ -1,6 +1,6 @@
 module Yaml
   macro debug(s = nil, &block)
-    {% if flag?(:debug) %}
+    {% if flag?(:camel_yaml_debug) %}
       {% if s %}
         puts {{s}}
       {% elsif block %}
