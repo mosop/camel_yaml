@@ -13,7 +13,6 @@ module YamlInternalSpecPrintAnchor
         bar: baz
     - *ref2
     EOS
-    puts Yaml.parse(text).pretty
     Yaml.parse(text).pretty.should eq text
   end
 end
