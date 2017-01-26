@@ -16,7 +16,6 @@ module Yaml::Builders
     end
 
     def value=(s : String?)
-      @sequence_entry.change
       @sequence_entry.value = Nodes::Scalar.new_string_scalar(s, position)
     end
 
@@ -29,7 +28,6 @@ module Yaml::Builders
     end
 
     def assign_child_value(child, index, s : String?)
-      @sequence_entry.change
       @sequence_entry.value = Nodes::Scalar.new_string_scalar(s, position)
     end
   end

@@ -69,6 +69,10 @@ module Yaml::Nodes
       @value ||= Undefined.new(@position)
     end
 
+    def value=(value : Value)
+      @value = value
+    end
+
     def raw
       value.raw
     end

@@ -185,11 +185,37 @@ module Yaml
 
     def []=(index : Index, value)
       fallback_for index
-      case index
+      case i = index
       when String
-        map[index] = value unless map.has_index?(index)
+        map[i] = value
       when Int32
-        seq[index] = value unless seq.has_index?(index)
+        seq[i] = value
+      end
+    end
+
+    def position
+      if target = @target
+        if v = target.position
+          return v
+        end
+      end
+      if prev = @previous_accessor
+        if v = prev.position
+          return v
+        end
+      end
+      document.position
+    end
+
+    def quote=(value : String)
+      self.value = Nodes::DoubleQuotedString.new(value, position)
+    end
+
+    def value=(value)
+      if prev = @previous_accessor
+        prev[index] = value
+      else
+        document.value = value
       end
     end
 
@@ -407,7 +433,7 @@ module Yaml
     end
 
     def collect_string_index_paths
-      map.collect_key_paths
+      map.collect_string_index_paths
     end
 
     def save

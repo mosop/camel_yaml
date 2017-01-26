@@ -1,7 +1,5 @@
 module Yaml::Nodes
-  class Sequence < Entity
-    include NodeMixins::Parent
-
+  class Sequence < List
     getter entries = [] of SequenceEntry
 
     def append(value : Nodes::Value)
@@ -11,7 +9,19 @@ module Yaml::Nodes
       entry
     end
 
-    def change(entry : SequenceEntry)
+    def set_or_append(index : Int32, value : Value)
+      if entry = @entries[index]?
+        entry.value = value
+        entry
+      else
+        while index < @entries.size - 1
+          append Null.new(position)
+        end
+        append(value)
+      end
+    end
+
+    def update_value(entry : SequenceEntry)
     end
 
     def accessible_entry?(index : Int32)
@@ -97,6 +107,14 @@ module Yaml::Nodes
           entry.put_pretty io, indent, "\n#{indent}"
         end
       end
+    end
+
+    def []=(index : Int32, value : Value)
+      set_or_append(index, value)
+    end
+
+    def []=(index : Int32, raw : RawArg)
+      set_or_append(index, Yaml.to_node(position, raw))
     end
   end
 end

@@ -45,12 +45,10 @@ module Yaml::Builders
     end
 
     def value=(v : Nodes::Mapping | Nodes::Sequence)
-      @mapping_entry.change
       @mapping_entry.value = v
     end
 
     def value=(s : String?)
-      @mapping_entry.change
       @mapping_entry.value = Nodes::Scalar.new_string_scalar(s, position)
     end
 
@@ -63,7 +61,6 @@ module Yaml::Builders
     end
 
     def assign_child_value(child, index, s : String?)
-      @mapping_entry.change
       s = Nodes::Scalar.new_string_scalar(s, position)
       if index == 0
         @mapping_entry.key = s

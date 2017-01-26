@@ -8,6 +8,6 @@ module YamlInternalOrderingFeature
     EOS
     )
 
-    yaml.map.string_key_entries.keys.should eq ["a", "b"]
+    yaml.map.string_index_entries.keys.should eq ["a", "b"]
   end
 end

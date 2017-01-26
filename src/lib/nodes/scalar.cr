@@ -23,14 +23,17 @@ module Yaml::Nodes
       if put_pretty_tag?(io, indent)
         io << " ''" unless put_pretty_string?(io, " ")
         io << ":"
+        yield
         put_pretty_trailing_comment? io, " "
       elsif put_pretty_string?(io, indent)
         io << ":"
+        yield
         put_pretty_trailing_comment? io, " "
       else
         io << indent
         io << NULL_SCALAR
         io << ":"
+        yield
         put_pretty_trailing_comment? io, " "
       end
     end

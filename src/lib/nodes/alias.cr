@@ -77,6 +77,7 @@ module Yaml::Nodes
       io << "*"
       io << @alias_name
       io << ":"
+      yield
       put_pretty_trailing_comment? io, " "
     end
 

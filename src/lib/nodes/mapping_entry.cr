@@ -1,5 +1,6 @@
 module Yaml::Nodes
   class MappingEntry
+    include NodeMixins::Parent
     include NodeMixins::HasParent
     include NodeMixins::HasLeadingComment
     include NodeMixins::HasTrailingComment
@@ -14,22 +15,26 @@ module Yaml::Nodes
       value.parent = @parent
     end
 
+    def position
+      @key.position
+    end
+
     def mapping
       parent.as(Mapping)
     end
 
-    def change
-      mapping.change self
-    end
-
     def key=(value : Value)
-      value.parent = @parent
+      value.parent = self
       @key = value
+      mapping.update_index self
+      value
     end
 
     def value=(value : Value)
       value.parent = @parent
       @value = value
+      mapping.update_value self
+      value
     end
 
     def accessible_entry?(index : Int32 | String)
@@ -103,7 +108,9 @@ module Yaml::Nodes
             k.put_pretty_key_for_single_line io, first_indent || indent
             io << " {}"
           else
-            k.put_pretty_key_for_multiline io, first_indent || indent
+            k.put_pretty_key_for_multiline io, first_indent || indent do
+              v.put_pretty_anchor? io, " "
+            end
             v.put_pretty io, "#{indent}  ", "\n#{indent}  "
           end
         when Sequence
@@ -111,7 +118,9 @@ module Yaml::Nodes
             k.put_pretty_key_for_single_line io, first_indent || indent
             io << " []"
           else
-            k.put_pretty_key_for_multiline io, first_indent || indent
+            k.put_pretty_key_for_multiline io, first_indent || indent do
+              v.put_pretty_anchor? io, " "
+            end
             v.put_pretty io, indent, "\n#{indent}"
           end
         end

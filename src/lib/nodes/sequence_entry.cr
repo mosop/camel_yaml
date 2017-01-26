@@ -1,5 +1,6 @@
 module Yaml::Nodes
   class SequenceEntry
+    include NodeMixins::Parent
     include NodeMixins::HasParent
     include NodeMixins::HasLeadingComment
     include NodeMixins::HasTrailingComment
@@ -8,20 +9,22 @@ module Yaml::Nodes
 
     def initialize(@parent : Sequence, value : Value)
       @value = value
-      value.parent = @parent
+      value.parent = self
+    end
+
+    def position
+      @value.position
     end
 
     def sequence
       parent.as(Sequence)
     end
 
-    def change
-      sequence.change self
-    end
-
     def value=(value : Value)
       value.parent = @parent
       @value = value
+      sequence.update_value self
+      value
     end
 
     def accessible_entry?(index : Int32 | String)
@@ -77,13 +80,32 @@ module Yaml::Nodes
     def put_pretty(io : IO, indent : String, first_indent : String? = nil)
       io << first_indent || indent
       io << "-"
-      case v = @value
-      when Scalar, Alias
-        v.put_pretty_value io, " "
-      when Mapping
-        v.put_pretty io, indent + "  ", " "
-      when Sequence
-        v.put_pretty io, indent + "  "
+      lb = case v = @value
+      when Scalar
+        v.put_pretty_anchor?(io, " ")
+      when Mapping, Sequence
+        v.put_pretty_anchor?(io, " ")
+      else
+        false
+      end
+      if lb
+        case v = @value
+        when Scalar
+          v.put_pretty_value io, "\n" + indent + "  "
+        when Mapping
+          v.put_pretty io, indent + "  ", "\n" + indent + "  "
+        when Sequence
+          v.put_pretty io, indent + "  ", "\n" + indent + "  "
+        end
+      else
+        case v
+        when Scalar, Alias
+          v.put_pretty_value io, " "
+        when Mapping
+          v.put_pretty io, indent + "  ", " "
+        when Sequence
+          v.put_pretty io, indent + "  "
+        end
       end
     end
   end

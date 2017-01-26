@@ -8,5 +8,9 @@ module Yaml::Nodes
     def accessible_entry?(index : Int32)
       nil
     end
+
+    def value=(value)
+      parent.replace_child self, value
+    end
   end
 end
