@@ -398,6 +398,13 @@ module Yaml
       end
     end
 
+    def has_node?
+      each do
+        return true
+      end
+      false
+    end
+
     def each
       current = self
       keys = Set(String).new
