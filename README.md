@@ -176,27 +176,19 @@ faces:
 ### Custom Accessor
 
 ```crystal
-class Site
-  include Yaml::Schema
+class Site < Yaml::Accessor
+  def name
+    s
+  end
 
-  class Accessor
-    def name
-      s
-    end
-
-    def url
-      "http://mosop.#{s}"
-    end
+  def url
+    "http://mosop.#{s}"
   end
 end
 
-class Sites
-  include Yaml::Schema
-
-  schema({Site})
+class Sites < Yaml::Accessor
+  custom_seq Site
 end
-
-Sites.register_schema
 
 yaml = Yaml.parse(<<-EOS
 - rocks

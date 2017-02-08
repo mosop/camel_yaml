@@ -454,3 +454,5 @@ module Yaml
     end
   end
 end
+
+require "./accessor/*"

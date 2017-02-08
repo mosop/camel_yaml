@@ -1,27 +1,19 @@
 require "../spec_helper"
 
 module YamlCodeExamplesCustomAccessor
-  class Site
-    include Yaml::Schema
+  class Site < Yaml::Accessor
+    def name
+      s
+    end
 
-    class Accessor
-      def name
-        s
-      end
-
-      def url
-        "http://mosop.#{s}"
-      end
+    def url
+      "http://mosop.#{s}"
     end
   end
 
-  class Sites
-    include Yaml::Schema
-
-    seq Site
+  class Sites < Yaml::Accessor
+    custom_seq Site
   end
-
-  Sites.register_schema
 
   it name do
     yaml = Yaml.parse(<<-EOS

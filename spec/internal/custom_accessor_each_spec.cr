@@ -1,31 +1,21 @@
 require "../spec_helper"
 
 module YamlInternalSpecCustomAccessorEach
-  class Attr
-    include Yaml::Schema
+  class Attr < Yaml::Accessor
+    getter attr : String
 
-    class Accessor
-      getter attr : String
-
-      def initialize(@attr)
-      end
+    def initialize(@attr)
     end
   end
-  Attr.register_schema
 
-  class Attrs
-    include Yaml::Schema
+  class Attrs < Yaml::Accessor
+    getter attr : String
 
-    class Accessor
-      getter attr : String
-
-      def initialize(@attr)
-      end
+    def initialize(@attr)
     end
 
-    map Attr, "@attr"
+    custom_map Attr, "@attr"
   end
-  Attrs.register_schema
 
   it name do
     yaml = Yaml.parse(<<-EOS
