@@ -70,7 +70,12 @@ module Yaml::Nodes
     end
 
     def value=(value : Value)
+      value.parent = self
       @value = value
+    end
+
+    def value=(value : Raw)
+      self.value = Yaml.to_node(position, value)
     end
 
     def raw

@@ -214,6 +214,7 @@ module Yaml
     def value=(value)
       if prev = @previous_accessor
         prev[index] = value
+        @target = prev.next_target?(index)
       else
         document.value = value
       end
