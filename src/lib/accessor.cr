@@ -160,7 +160,7 @@ module Yaml
     end
 
     def _fallback(index : String, child_index : Int32)
-      raise "Not implemented."
+      previous_accessor.map[index] = Nodes::Sequence.new(document.position)
     end
 
     def _fallback(index : String, child_index : String)
@@ -191,6 +191,11 @@ module Yaml
       when Int32
         seq[i] = value
       end
+    end
+
+    def <<(value)
+      fallback_for 0
+      seq << value
     end
 
     def position

@@ -83,8 +83,12 @@ module Yaml::Nodes
       self
     end
 
-    def <<(value)
+    def <<(value : Value)
       append value
+    end
+
+    def <<(value : RawArg)
+      append Yaml.to_node(position, value)
     end
 
     def put_pretty(io : IO, indent : String, first_indent : String? = nil)

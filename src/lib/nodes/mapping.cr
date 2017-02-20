@@ -94,7 +94,6 @@ module Yaml::Nodes
     end
 
     def accessible_sequence?
-      self
     end
 
     def accessible_key?
