@@ -425,7 +425,7 @@ module Yaml
         l = current.next_layer?
         return unless l
         current = l[current]
-        keys.merge! next_keys
+        keys.concat next_keys
       end
     end
 
